@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A modern, responsive Tic-Tac-Toe game featuring Player vs Player and smart AI modes, sound effects, animations, and score tracking.">
+  <title>Tic-Tac-Toe Master</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background Glow Orbs -->
+  <div class="bg-glow glow-cyan"></div>
+  <div class="bg-glow glow-rose"></div>
+
+  <!-- Confetti Canvas for Victory Celebrations -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="app-container">
+    <!-- Header Section -->
+    <header class="game-header">
+      <div class="badge">Modern Classic</div>
+      <h1 class="game-title">TIC <span>TAC</span> TOE</h1>
+      <p class="game-subtitle">Outsmart your opponent or challenge the AI</p>
+    </header>
+
+    <!-- Controls & Game Mode Toggle -->
+    <section class="game-settings" aria-label="Game Settings">
+      <div class="mode-selector" role="radiogroup" aria-label="Game Mode">
+        <button id="aiModeBtn" class="mode-btn active" role="radio" aria-checked="true" data-mode="ai">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          vs AI
+        </button>
+        <button id="pvpModeBtn" class="mode-btn" role="radio" aria-checked="false" data-mode="pvp">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          2 Players
+        </button>
+      </div>
+
+      <!-- AI Difficulty -->
+      <div id="aiDifficultyContainer" class="ai-difficulty">
+        <label for="difficultySelect">Difficulty:</label>
+        <div class="select-wrapper">
+          <select id="difficultySelect" aria-label="AI Difficulty">
+            <option value="hard" selected>Master (Unbeatable)</option>
+            <option value="easy">Casual (Easy)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons: Sound & Theme -->
+      <div class="utility-controls">
+        <button id="soundToggleBtn" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">
+          <svg id="soundIconOn" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="soundIconOff" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Scoreboard -->
+    <section class="scoreboard" aria-label="Scoreboard">
+      <div class="score-card player-x active-turn" id="scoreCardX">
+        <div class="player-tag">
+          <span class="mark-preview x-mark">✕</span>
+          <span class="player-name" id="labelPlayerX">YOU (X)</span>
+        </div>
+        <div class="score-value" id="scoreX">0</div>
+      </div>
+
+      <div class="score-card ties" id="scoreCardTies">
+        <div class="player-tag">
+          <span class="player-name">DRAWS</span>
+        </div>
+        <div class="score-value" id="scoreTies">0</div>
+      </div>
+
+      <div class="score-card player-o" id="scoreCardO">
+        <div class="player-tag">
+          <span class="mark-preview o-mark">◯</span>
+          <span class="player-name" id="labelPlayerO">AI (O)</span>
+        </div>
+        <div class="score-value" id="scoreO">0</div>
+      </div>
+    </section>
+
+    <!-- Turn Status Indicator -->
+    <div class="status-panel" aria-live="polite">
+      <div class="turn-indicator" id="turnIndicator">
+        <span class="turn-dot" id="turnDot"></span>
+        <span class="turn-text" id="statusMessage">Your Turn (X)</span>
+      </div>
+    </div>
+
+    <!-- 3x3 Game Board -->
+    <main class="board-wrapper">
+      <div class="board" id="board" role="grid" aria-label="Tic-Tac-Toe Grid">
+        <button class="cell" data-index="0" role="gridcell" aria-label="Cell 1" tabindex="0"></button>
+        <button class="cell" data-index="1" role="gridcell" aria-label="Cell 2" tabindex="0"></button>
+        <button class="cell" data-index="2" role="gridcell" aria-label="Cell 3" tabindex="0"></button>
+        <button class="cell" data-index="3" role="gridcell" aria-label="Cell 4" tabindex="0"></button>
+        <button class="cell" data-index="4" role="gridcell" aria-label="Cell 5" tabindex="0"></button>
+        <button class="cell" data-index="5" role="gridcell" aria-label="Cell 6" tabindex="0"></button>
+        <button class="cell" data-index="6" role="gridcell" aria-label="Cell 7" tabindex="0"></button>
+        <button class="cell" data-index="7" role="gridcell" aria-label="Cell 8" tabindex="0"></button>
+        <button class="cell" data-index="8" role="gridcell" aria-label="Cell 9" tabindex="0"></button>
+      </div>
+
+      <!-- Strike-through Line for Winning Combination -->
+      <div class="strike-line" id="strikeLine"></div>
+    </main>
+
+    <!-- Game Control Actions -->
+    <footer class="action-footer">
+      <button id="restartBtn" class="action-btn primary-action">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        New Round
+      </button>
+      <button id="resetScoreBtn" class="action-btn secondary-action">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"></path>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        Reset Scores
+      </button>
+    </footer>
+  </div>
+
+  <!-- Win / Draw Modal Overlay -->
+  <div class="modal-backdrop" id="gameModal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-icon-badge" id="modalBadge">🎉</div>
+      <h2 class="modal-title" id="modalTitle">Victory!</h2>
+      <p class="modal-message" id="modalMessage">Player X takes the round!</p>
+      <div class="modal-buttons">
+        <button id="modalPlayAgainBtn" class="action-btn primary-action">Play Again</button>
+        <button id="modalCloseBtn" class="action-btn secondary-action">View Board</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
